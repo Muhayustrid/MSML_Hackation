@@ -1,0 +1,20 @@
+{
+  "run_id": "99ea27f07c574968bf9c2d2396505a44",
+  "model_type": "RandomForestClassifier",
+  "best_params": {
+    "class_weight": "balanced",
+    "max_depth": 12,
+    "min_samples_leaf": 2,
+    "n_estimators": 200
+  },
+  "best_cv_f1": 0.44810330731858267,
+  "metrics": {
+    "test_accuracy": 0.8342364259648347,
+    "test_precision": 0.36804308797127466,
+    "test_recall": 0.5812854442344045,
+    "test_f1": 0.4507145474532796,
+    "test_roc_auc": 0.7966022066421798
+  },
+  "training_seconds": 22.79169809999985,
+  "random_state": 42
+}

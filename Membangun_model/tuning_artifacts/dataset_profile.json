@@ -1,0 +1,7 @@
+{
+  "train_rows": 36168,
+  "test_rows": 9043,
+  "feature_count": 50,
+  "train_positive_rate": 0.11698186241981863,
+  "test_positive_rate": 0.11699657193409267
+}

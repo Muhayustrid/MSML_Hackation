@@ -1,0 +1,17 @@
+# Local Prometheus (non-Docker) scrapes exporter on host port 8088.
+# Ports 8000-8005 are occupied by another Docker stack on this machine.
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - alert_rules.yml
+
+scrape_configs:
+  - job_name: bank-marketing-exporter
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["127.0.0.1:8088"]
+        labels:
+          service: bank_marketing_ml
+          student: muhammad_yusuf_tdrv4
