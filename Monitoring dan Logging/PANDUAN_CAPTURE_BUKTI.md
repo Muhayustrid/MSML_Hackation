@@ -44,7 +44,6 @@ Screenshot output yang memuat `health_status: 200`, `http_status: 200`, `predict
 Terminal 1 exporter harus tetap hidup. Di terminal baru, jalankan:
 
 ```powershell
-$env:PATH = "C:\Users\Muham\AppData\Local\Programs\DockerDesktop\resources\bin;$env:PATH"
 docker compose -f ".\Monitoring dan Logging\docker-compose.yml" up -d
 docker compose -f ".\Monitoring dan Logging\docker-compose.yml" ps
 ```
