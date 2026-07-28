@@ -7,7 +7,7 @@ path ditentukan saat runtime.
 ## 1. Setup dari clone baru
 
 ```powershell
-git clone --branch repair/submission-reviewer --single-branch https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto
+git clone https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto
 Set-Location .\SMSML_Muhammad_Yusuf_Tri_Daryanto
 git clone https://github.com/Muhayustrid/Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto.git
 git clone https://github.com/Muhayustrid/Workflow-CI.git
@@ -157,12 +157,18 @@ Screenshot harus berasal dari UI MLflow dan GitHub Actions yang benar-benar
 dijalankan. **Jangan memalsukan, membuat secara programatis, atau memakai ulang
 screenshot lama/referensi.** Periksa isi dan path sebelum commit.
 
-Commit dua screenshot MLflow ke branch aggregate:
+Commit dua screenshot MLflow ke branch `main` aggregate. Periksa branch aktif
+dan pindah ke `main` bila diperlukan:
 
 ```powershell
+$currentBranch = git branch --show-current
+if ($currentBranch -ne "main") {
+  git switch main
+}
+git pull --ff-only origin main
 git add -- "Membangun_model/screenshoot_dashboard.png" "Membangun_model/screenshoot_artifak.png"
 git commit -m "docs: add genuine MLflow evidence"
-git push origin repair/submission-reviewer
+git push origin main
 ```
 
 Commit screenshot workflow di repositori standalone Workflow-CI:
@@ -185,8 +191,13 @@ Jalankan dari root aggregate untuk memastikan panduan tetap reproducible:
 ```powershell
 $readme = Get-Content -LiteralPath "README.md" -Raw
 $guide = Get-Content -LiteralPath "PANDUAN_MENJALANKAN_DAN_SCREENSHOT.md" -Raw
+$marker = "## 8. Pemeriksaan statis dokumentasi"
+$markerIndex = $guide.IndexOf($marker)
+if ($markerIndex -lt 0) { throw "Bagian pemeriksaan statis tidak ditemukan" }
+$guideContent = $guide.Substring(0, $markerIndex)
 
 $requiredReadme = @(
+  "git clone https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto",
   "git clone https://github.com/Muhayustrid/Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto.git",
   "git clone https://github.com/Muhayustrid/Workflow-CI.git",
   "Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto\requirements.txt",
@@ -195,6 +206,7 @@ $requiredReadme = @(
   "Monitoring dan Logging\requirements.txt"
 )
 $requiredGuide = @(
+  "git clone https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto",
   "Membangun_model/screenshoot_dashboard.png",
   "Membangun_model/screenshoot_artifak.png",
   "Workflow-CI/Workflow Artifact.png",
@@ -204,20 +216,32 @@ $requiredGuide = @(
   "tags.logging_mode = 'manual'",
   "attributes.start_time DESC",
   "model/",
-  "estimator.html"
+  "estimator.html",
+  '$currentBranch = git branch --show-current',
+  'if ($currentBranch -ne "main")',
+  "git switch main"
 )
 
 foreach ($value in $requiredReadme) {
   if (-not $readme.Contains($value)) { throw "README tidak memuat: $value" }
 }
 foreach ($value in $requiredGuide) {
-  if (-not $guide.Contains($value)) { throw "Panduan tidak memuat: $value" }
+  if (-not $guideContent.Contains($value)) { throw "Panduan tidak memuat: $value" }
 }
-if (($readme + $guide) -match "(?i)\b[a-f0-9]{32}\b") {
+$documentation = $readme + $guideContent
+if ($documentation -match "(?i)\b[a-f0-9]{32}\b") {
   throw "Ditemukan run ID MLflow tetap"
 }
-if (($readme + $guide) -match "(?i)\b[A-Z]:\\") {
+if ($documentation -match "(?i)\b[A-Z]:\\") {
   throw "Ditemukan path absolut drive Windows"
+}
+$forbiddenBranch = "repair/" + "submission-reviewer"
+if ($documentation.Contains($forbiddenBranch)) {
+  throw "Ditemukan referensi branch repair"
+}
+$mainPush = "git push origin " + "main"
+if ([regex]::Matches($guideContent, [regex]::Escape($mainPush)).Count -ne 2) {
+  throw "Push bukti aggregate dan Workflow-CI harus menuju main"
 }
 "STATIC_CHECK_OK"
 ```

@@ -13,7 +13,7 @@ Jalankan di PowerShell. Aggregate tidak menyimpan K1/K3 sebagai gitlink, jadi
 keduanya harus di-clone setelah aggregate.
 
 ```powershell
-git clone --branch repair/submission-reviewer --single-branch https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto
+git clone https://github.com/Muhayustrid/MSML_Hackation.git SMSML_Muhammad_Yusuf_Tri_Daryanto
 Set-Location .\SMSML_Muhammad_Yusuf_Tri_Daryanto
 git clone https://github.com/Muhayustrid/Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto.git
 git clone https://github.com/Muhayustrid/Workflow-CI.git
