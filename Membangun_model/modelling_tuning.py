@@ -30,6 +30,7 @@ from sklearn.metrics import (
     roc_curve,
 )
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.utils import estimator_html_repr
 
 from modelling import load_data
 
@@ -43,13 +44,13 @@ PARAM_GRID = {
 }
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=ROOT / "namadataset_preprocessing")
     parser.add_argument("--tracking-uri", default=str(ROOT / "mlruns"))
-    parser.add_argument("--experiment-name", default="bank-marketing-tuning")
+    parser.add_argument("--experiment-name", default="bank-marketing-model-development")
     parser.add_argument("--artifact-dir", type=Path, default=ROOT / "tuning_artifacts")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main() -> int:
@@ -147,6 +148,9 @@ def main() -> int:
                 indent=2,
             ),
             encoding="utf-8",
+        )
+        (args.artifact_dir / "estimator.html").write_text(
+            estimator_html_repr(model), encoding="utf-8"
         )
 
         mlflow.log_params(search.best_params_)
