@@ -11,6 +11,11 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 
 
+def test_model_uri_environment_has_priority(monkeypatch):
+    monkeypatch.setenv("MODEL_URI", "runs:/verified-run/model")
+    assert exporter.resolve_model_uri() == "runs:/verified-run/model"
+
+
 def test_application_lifespan_starts():
     async def start():
         async with exporter.app.router.lifespan_context(exporter.app):

@@ -2,6 +2,25 @@
 
 Bank Marketing serving and monitoring for `muhammad_yusuf_tdrv4`.
 
+## Deterministic Local Serving
+
+Run from the aggregate repository root. The selected artifact is the final
+manual tuning run `a101eca9146c4bd5b650b36df8667d06`.
+
+PowerShell:
+
+```powershell
+$env:MODEL_URI = (Resolve-Path ".\Membangun_model\mlruns\922817180905645765\a101eca9146c4bd5b650b36df8667d06\artifacts\model").Path
+& ".\Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto\.venv\Scripts\python.exe" ".\Monitoring dan Logging\3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
+```
+
+Unix shell:
+
+```sh
+export MODEL_URI="$(pwd)/Membangun_model/mlruns/922817180905645765/a101eca9146c4bd5b650b36df8667d06/artifacts/model"
+python "Monitoring dan Logging/3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
+```
+
 ## Local URLs
 
 - API documentation: `http://127.0.0.1:8088/docs`
