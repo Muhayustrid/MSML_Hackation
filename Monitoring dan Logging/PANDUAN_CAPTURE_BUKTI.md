@@ -8,15 +8,27 @@ repository agregat; setiap blok dapat langsung dicopy ke terminal baru.
 ### Terminal 1: Jalankan exporter dan API
 
 ```powershell
-$env:MODEL_URI = (Resolve-Path ".\Membangun_model\mlruns\922817180905645765\a101eca9146c4bd5b650b36df8667d06\artifacts\model").Path
-& ".\Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto\.venv\Scripts\python.exe" ".\Monitoring dan Logging\3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
-```
+$root = (Resolve-Path ".").Path
+$python = (Resolve-Path (Join-Path $root ".venv\Scripts\python.exe")).Path
+$trackingDir = (Resolve-Path (Join-Path $root "Membangun_model\mlruns")).Path
+$env:MLFLOW_TRACKING_URI = ([System.Uri]$trackingDir).AbsoluteUri
+$resolver = @'
+from mlflow import MlflowClient
 
-Contoh setara untuk Unix shell:
-
-```sh
-export MODEL_URI="$(pwd)/Membangun_model/mlruns/922817180905645765/a101eca9146c4bd5b650b36df8667d06/artifacts/model"
-python "Monitoring dan Logging/3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
+client = MlflowClient()
+experiment_ids = [item.experiment_id for item in client.search_experiments()]
+runs = client.search_runs(
+    experiment_ids,
+    filter_string="tags.logging_mode = 'manual'",
+    order_by=["attributes.start_time DESC"],
+    max_results=1,
+)
+if not runs:
+    raise SystemExit("Run tuning manual tidak ditemukan")
+print(f"{runs[0].info.artifact_uri.rstrip('/')}/model")
+'@
+$env:MODEL_URI = ($resolver | & $python -).Trim()
+& $python (Join-Path $root "Monitoring dan Logging\3.prometheus_exporter.py") --host 127.0.0.1 --port 8088
 ```
 
 Biarkan terminal ini terbuka. Screenshot output saat model telah dimuat dan Uvicorn berjalan. Simpan sebagai:
@@ -149,11 +161,7 @@ Untuk memicu `ModelServiceDown`, hentikan Terminal 1 exporter dengan `Ctrl+C`, t
 6.bukti alerting Grafana\notification_model_service_down.png
 ```
 
-Jalankan kembali exporter setelah screenshot:
-
-```powershell
-$env:MODEL_URI = (Resolve-Path ".\Membangun_model\mlruns\922817180905645765\a101eca9146c4bd5b650b36df8667d06\artifacts\model").Path
-& ".\Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto\.venv\Scripts\python.exe" ".\Monitoring dan Logging\3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
-```
+Jalankan kembali exporter setelah screenshot dengan mengulangi blok Terminal 1
+pada bagian 1; resolver akan memilih run manual terbaru lagi.
 
 `HighPredictionErrorRate` dan `HighPredictionLatencyP95` memerlukan traffic error/latensi nyata untuk firing. Jangan membuat screenshot notification jika rule belum benar-benar firing atau belum ada contact point Grafana.

@@ -15,7 +15,7 @@ Verified environment: Python `3.12.10`, MLflow `2.19.0`, scikit-learn
 - Baseline logging: MLflow sklearn autolog with model signature and input example, plus five explicit test metrics. Autolog is the only model logger and creates one artifact at `model`.
 - Tuning: `GridSearchCV`, scoring `f1`, and `StratifiedKFold(n_splits=3, shuffle=True, random_state=42)`.
 - Grid: `n_estimators=[100, 200]`, `max_depth=[None, 12]`, `min_samples_leaf=[1, 2]`, and `class_weight=["balanced"]` (8 candidates, 24 fits).
-- Tuning logging: manual only; the best model is logged at `model` with eight additional evaluation artifacts.
+- Tuning logging: manual only; the best model is logged at `model` with nine additional evaluation artifacts.
 
 ## Verified results
 
