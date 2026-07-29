@@ -20,12 +20,12 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 ROOT = Path(__file__).resolve().parent
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=ROOT / "namadataset_preprocessing")
     parser.add_argument("--tracking-uri", default=str(ROOT / "mlruns"))
-    parser.add_argument("--experiment-name", default="bank-marketing-baseline")
-    return parser.parse_args()
+    parser.add_argument("--experiment-name", default="bank-marketing-model-development")
+    return parser.parse_args(argv)
 
 
 def load_data(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
@@ -36,8 +36,22 @@ def load_data(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd
 
     X_train = pd.read_csv(data_dir / "X_train.csv")
     X_test = pd.read_csv(data_dir / "X_test.csv")
-    y_train = pd.read_csv(data_dir / "y_train.csv")["y"]
-    y_test = pd.read_csv(data_dir / "y_test.csv")["y"]
+    y_train_frame = pd.read_csv(data_dir / "y_train.csv")
+    y_test_frame = pd.read_csv(data_dir / "y_test.csv")
+    if "y" not in y_train_frame.columns or "y" not in y_test_frame.columns:
+        raise ValueError("Target column 'y' missing")
+    y_train = y_train_frame["y"]
+    y_test = y_test_frame["y"]
+    if list(X_train.columns) != list(X_test.columns):
+        raise ValueError("Train/test feature schemas differ")
+    if len(X_train) != len(y_train) or len(X_test) != len(y_test):
+        raise ValueError("Feature and target row counts differ")
+    if X_train.empty or X_test.empty:
+        raise ValueError("Processed feature data is empty")
+    if X_train.isna().any().any() or X_test.isna().any().any():
+        raise ValueError("Processed features contain null values")
+    if not set(y_train.unique()).issubset({0, 1}) or not set(y_test.unique()).issubset({0, 1}):
+        raise ValueError("Targets must be binary")
     if "duration" in X_train.columns or "duration" in X_test.columns:
         raise ValueError("Leakage column 'duration' found in features")
     return X_train, X_test, y_train, y_test

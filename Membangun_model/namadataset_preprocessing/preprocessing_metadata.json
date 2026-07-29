@@ -2,10 +2,10 @@
   "random_state": 42,
   "test_size": 0.2,
   "n_rows_raw": 45211,
-  "n_duplicates_removed": 0,
-  "n_rows_after_dedupe": 45211,
-  "n_train": 36168,
-  "n_test": 9043,
+  "n_duplicates_removed": 16,
+  "n_rows_after_dedupe": 45195,
+  "n_train": 36156,
+  "n_test": 9039,
   "n_features": 50,
   "feature_names": [
     "age",
@@ -86,12 +86,12 @@
     "yes": 1
   },
   "class_proportion_train": {
-    "0": 0.8830181375801813,
-    "1": 0.11698186241981863
+    "0": 0.8829793118707822,
+    "1": 0.11702068812921783
   },
   "class_proportion_test": {
-    "0": 0.8830034280659074,
-    "1": 0.11699657193409267
+    "0": 0.8829516539440203,
+    "1": 0.11704834605597965
   },
   "source_dataset": "UCI Bank Marketing bank-full.csv",
   "source_url": "https://archive.ics.uci.edu/dataset/222/bank+marketing"

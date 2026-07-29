@@ -1,14 +1,34 @@
 # Panduan Capture Bukti Monitoring
 
-Gunakan **PowerShell**, bukan Command Prompt. Setiap blok dapat langsung dicopy ke terminal baru.
+Gunakan **PowerShell**, bukan Command Prompt. Jalankan setiap blok dari root
+repository agregat; setiap blok dapat langsung dicopy ke terminal baru.
 
 ## 1. Bukti Serving
 
 ### Terminal 1: Jalankan exporter dan API
 
 ```powershell
-cd "D:\hackation\dicoding_ml\submission_baru\SMSML_Muhammad_Yusuf_Tri_Daryanto\Monitoring dan Logging"
-& "D:\hackation\dicoding_ml\.venv\Scripts\python.exe" ".\3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
+$root = (Resolve-Path ".").Path
+$python = (Resolve-Path (Join-Path $root ".venv\Scripts\python.exe")).Path
+$trackingDir = (Resolve-Path (Join-Path $root "Membangun_model\mlruns")).Path
+$env:MLFLOW_TRACKING_URI = ([System.Uri]$trackingDir).AbsoluteUri
+$resolver = @'
+from mlflow import MlflowClient
+
+client = MlflowClient()
+experiment_ids = [item.experiment_id for item in client.search_experiments()]
+runs = client.search_runs(
+    experiment_ids,
+    filter_string="tags.logging_mode = 'manual'",
+    order_by=["attributes.start_time DESC"],
+    max_results=1,
+)
+if not runs:
+    raise SystemExit("Run tuning manual tidak ditemukan")
+print(f"{runs[0].info.artifact_uri.rstrip('/')}/model")
+'@
+$env:MODEL_URI = ($resolver | & $python -).Trim()
+& $python (Join-Path $root "Monitoring dan Logging\3.prometheus_exporter.py") --host 127.0.0.1 --port 8088
 ```
 
 Biarkan terminal ini terbuka. Screenshot output saat model telah dimuat dan Uvicorn berjalan. Simpan sebagai:
@@ -22,8 +42,7 @@ Jika muncul `Address already in use`, cari terminal lama yang menjalankan export
 ### Terminal 2: Jalankan inference
 
 ```powershell
-cd "D:\hackation\dicoding_ml\submission_baru\SMSML_Muhammad_Yusuf_Tri_Daryanto\Monitoring dan Logging"
-& "D:\hackation\dicoding_ml\.venv\Scripts\python.exe" ".\7.inference.py" --n 10
+& ".\Eksperimen_SML_Muhammad_Yusuf_Tri_Daryanto\.venv\Scripts\python.exe" ".\Monitoring dan Logging\7.inference.py" --n 10
 ```
 
 Screenshot output yang memuat `health_status: 200`, `http_status: 200`, `predictions`, dan `probabilities`. Simpan sebagai:
@@ -37,10 +56,8 @@ Screenshot output yang memuat `health_status: 200`, `http_status: 200`, `predict
 Terminal 1 exporter harus tetap hidup. Di terminal baru, jalankan:
 
 ```powershell
-cd "D:\hackation\dicoding_ml\submission_baru\SMSML_Muhammad_Yusuf_Tri_Daryanto\Monitoring dan Logging"
-$env:PATH = "C:\Users\Muham\AppData\Local\Programs\DockerDesktop\resources\bin;$env:PATH"
-docker compose up -d
-docker compose ps
+docker compose -f ".\Monitoring dan Logging\docker-compose.yml" up -d
+docker compose -f ".\Monitoring dan Logging\docker-compose.yml" ps
 ```
 
 Bila inference belum dijalankan setelah Compose aktif, ulangi perintah inference pada bagian 1 untuk mengisi metrik.
@@ -144,11 +161,7 @@ Untuk memicu `ModelServiceDown`, hentikan Terminal 1 exporter dengan `Ctrl+C`, t
 6.bukti alerting Grafana\notification_model_service_down.png
 ```
 
-Jalankan kembali exporter setelah screenshot:
-
-```powershell
-cd "D:\hackation\dicoding_ml\submission_baru\SMSML_Muhammad_Yusuf_Tri_Daryanto\Monitoring dan Logging"
-& "D:\hackation\dicoding_ml\.venv\Scripts\python.exe" ".\3.prometheus_exporter.py" --host 127.0.0.1 --port 8088
-```
+Jalankan kembali exporter setelah screenshot dengan mengulangi blok Terminal 1
+pada bagian 1; resolver akan memilih run manual terbaru lagi.
 
 `HighPredictionErrorRate` dan `HighPredictionLatencyP95` memerlukan traffic error/latensi nyata untuk firing. Jangan membuat screenshot notification jika rule belum benar-benar firing atau belum ada contact point Grafana.
