@@ -2,9 +2,9 @@
 
 Jalankan semua perintah di PowerShell dari root submission saat ini. Panduan ini hanya untuk tiga screenshot yang belum ada.
 
-## 1. Setup Sekali
+## 1. Copy dan Jalankan Blok Ini
 
-Salin seluruh blok ini. Instalasi memakai Python 3.12 dan virtual environment terpisah `.venv_screenshot`.
+Salin dan jalankan seluruh blok dari root submission. Instalasi pertama dapat memakan beberapa menit; pengulangan biasanya lebih cepat.
 
 ```powershell
 $root = (Resolve-Path ".").Path
@@ -15,23 +15,8 @@ if (-not (Test-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe"))) {
   if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe"))) { throw "Gagal membuat .venv_screenshot dengan Python 3.12" }
 }
 $python = (Resolve-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe")).Path
-& $python -m pip install --upgrade pip
-if ($LASTEXITCODE -ne 0) { throw "Gagal memperbarui pip" }
 & $python -m pip install -r (Join-Path $root "Membangun_model\requirements.txt")
 if ($LASTEXITCODE -ne 0) { throw "Gagal memasang Membangun_model/requirements.txt" }
-```
-
-Jika instalasi berhasil, requirement yang dipakai adalah `Membangun_model/requirements.txt`.
-
-## 2. Jalankan Training dan MLflow UI
-
-Salin seluruh blok ini. Tunggu test, baseline, dan tuning selesai. Perintah terakhir menjalankan MLflow UI; biarkan terminal tetap terbuka.
-
-```powershell
-$root = (Resolve-Path ".").Path
-if (-not (Test-Path (Join-Path $root "Membangun_model\requirements.txt"))) { throw "Jalankan dari root submission" }
-if (-not (Test-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe"))) { throw "Jalankan langkah 1 terlebih dahulu" }
-$python = (Resolve-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe")).Path
 $k2 = Join-Path $root "Membangun_model"
 $trackingDir = Join-Path $k2 "mlruns"
 New-Item -ItemType Directory -Force $trackingDir | Out-Null
@@ -51,7 +36,7 @@ try {
 
 Buka http://127.0.0.1:5000 setelah terminal menampilkan bahwa server siap. Tekan `Ctrl+C` hanya setelah dua screenshot MLflow selesai.
 
-## 3. Ambil Tiga Screenshot
+## 2. Ambil Tiga Screenshot
 
 1. **Dashboard MLflow:** buka experiment `bank-marketing-model-development`. Pastikan tabel menampilkan run baseline dan tuning terbaru beserta kolom nama/status run, waktu, parameter `n_estimators`, `max_depth`, `min_samples_leaf`, `class_weight`, dan `random_state`, serta metric `test_accuracy`, `test_precision`, `test_recall`, `test_f1`, dan `test_roc_auc`. Simpan screenshot asli sebagai `Membangun_model/screenshoot_dashboard.png`.
 2. **Artifact MLflow:** buka run `rf_grid_search_manual` terbaru yang bertag `logging_mode=manual`, lalu buka tab **Artifacts**. Pastikan daftar artifact memperlihatkan `model/`, `estimator.html`, dan artifact evaluasi. Simpan screenshot asli sebagai `Membangun_model/screenshoot_artifak.png`.
@@ -62,5 +47,5 @@ Jangan membuat screenshot secara programatis atau memakai screenshot lama.
 ## Jika Ada Error
 
 - `Jalankan dari root submission`: buka PowerShell di folder submission yang berisi `Membangun_model/` dan `Workflow-CI/`, lalu ulangi dari langkah 1.
-- Port 5000 sudah dipakai: hentikan proses MLflow lama dengan `Ctrl+C`, lalu ulangi langkah 2.
+- Port 5000 sudah dipakai: hentikan proses MLflow lama dengan `Ctrl+C`, lalu ulangi blok di atas.
 - Untuk diagnosis lebih lengkap, lihat `PANDUAN_MENJALANKAN_DAN_SCREENSHOT.md`.
