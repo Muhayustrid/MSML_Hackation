@@ -1,6 +1,7 @@
 .worktrees/
 .superpowers/
 .venv/
+.venv_screenshot/
 __pycache__/
 .pytest_cache/
 mlruns/
