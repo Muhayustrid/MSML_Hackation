@@ -28,18 +28,19 @@ if ($LASTEXITCODE -ne 0) { throw "Gagal memasang Membangun_model/requirements.tx
 $k2 = Join-Path $root "Membangun_model"
 $trackingDir = Join-Path $k2 "mlruns"
 New-Item -ItemType Directory -Force $trackingDir | Out-Null
+$trackingUri = ([System.Uri]$trackingDir).AbsoluteUri
 Push-Location $k2
 try {
   & $python -m pytest -q tests
   if ($LASTEXITCODE -ne 0) { throw "Test K2 gagal" }
-  & $python modelling.py --tracking-uri $trackingDir --experiment-name bank-marketing-model-development
+  & $python modelling.py --tracking-uri $trackingUri --experiment-name bank-marketing-model-development
   if ($LASTEXITCODE -ne 0) { throw "Training baseline gagal" }
-  & $python modelling_tuning.py --tracking-uri $trackingDir --experiment-name bank-marketing-model-development
+  & $python modelling_tuning.py --tracking-uri $trackingUri --experiment-name bank-marketing-model-development
   if ($LASTEXITCODE -ne 0) { throw "Training tuning gagal" }
 } finally {
   Pop-Location
 }
-& $python -m mlflow ui --backend-store-uri $trackingDir --host 127.0.0.1 --port 5000
+& $python -m mlflow ui --backend-store-uri $trackingUri --host 127.0.0.1 --port 5000
 ```
 
 Buka http://127.0.0.1:5000 setelah terminal menampilkan bahwa server siap. Tekan `Ctrl+C` hanya setelah dua screenshot MLflow selesai.
