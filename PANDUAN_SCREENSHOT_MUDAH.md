@@ -39,9 +39,9 @@ Push-Location $k2
 try {
   & $python -m pytest -q tests
   if ($LASTEXITCODE -ne 0) { throw "Test K2 gagal" }
-  & $python modelling.py --tracking-uri $trackingDir
+  & $python modelling.py --tracking-uri $trackingDir --experiment-name bank-marketing-model-development
   if ($LASTEXITCODE -ne 0) { throw "Training baseline gagal" }
-  & $python modelling_tuning.py --tracking-uri $trackingDir
+  & $python modelling_tuning.py --tracking-uri $trackingDir --experiment-name bank-marketing-model-development
   if ($LASTEXITCODE -ne 0) { throw "Training tuning gagal" }
 } finally {
   Pop-Location
