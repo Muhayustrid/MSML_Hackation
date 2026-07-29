@@ -10,11 +10,19 @@ Salin dan jalankan seluruh blok dari root submission. Instalasi pertama dapat me
 $root = (Resolve-Path ".").Path
 if (-not (Test-Path (Join-Path $root "Membangun_model\requirements.txt"))) { throw "Jalankan dari root submission" }
 if (-not (Test-Path (Join-Path $root "Workflow-CI"))) { throw "Folder Workflow-CI tidak ditemukan" }
-if (-not (Test-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe"))) {
-  py -3.12 -m venv (Join-Path $root ".venv_screenshot")
-  if ($LASTEXITCODE -ne 0 -or -not (Test-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe"))) { throw "Gagal membuat .venv_screenshot dengan Python 3.12" }
+$venvDir = Join-Path $root ".venv_screenshot"
+$venvPython = Join-Path $venvDir "Scripts\python.exe"
+if (Test-Path $venvPython) {
+  $venvVersion = & $venvPython -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+  if ($LASTEXITCODE -ne 0 -or $venvVersion -ne "3.12") {
+    Remove-Item -Recurse -Force $venvDir
+  }
 }
-$python = (Resolve-Path (Join-Path $root ".venv_screenshot\Scripts\python.exe")).Path
+if (-not (Test-Path $venvPython)) {
+  py -3.12 -m venv $venvDir
+  if ($LASTEXITCODE -ne 0 -or -not (Test-Path $venvPython)) { throw "Gagal membuat .venv_screenshot dengan Python 3.12" }
+}
+$python = (Resolve-Path $venvPython).Path
 & $python -m pip install -r (Join-Path $root "Membangun_model\requirements.txt")
 if ($LASTEXITCODE -ne 0) { throw "Gagal memasang Membangun_model/requirements.txt" }
 $k2 = Join-Path $root "Membangun_model"
@@ -47,5 +55,6 @@ Jangan membuat screenshot secara programatis atau memakai screenshot lama.
 ## Jika Ada Error
 
 - `Jalankan dari root submission`: buka PowerShell di folder submission yang berisi `Membangun_model/` dan `Workflow-CI/`, lalu ulangi dari langkah 1.
+- `.venv_screenshot` memakai Python 3.14: virtual environment tersebut otomatis dihapus dan dibuat ulang dengan Python 3.12.
 - Port 5000 sudah dipakai: hentikan proses MLflow lama dengan `Ctrl+C`, lalu ulangi blok di atas.
 - Untuk diagnosis lebih lengkap, lihat `PANDUAN_MENJALANKAN_DAN_SCREENSHOT.md`.
